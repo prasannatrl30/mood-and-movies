@@ -74,7 +74,7 @@ jobs:
       - name: Publish to Instagram
         if: steps.gate.outputs.go == 'true'
         env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_USER_ID: ${{ vars.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           # Immutable raw URL pinned to the commit we just pushed, so Instagram
           # always fetches today's card (never a cached older one).
