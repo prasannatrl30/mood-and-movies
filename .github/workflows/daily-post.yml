@@ -1,0 +1,89 @@
+name: Daily Instagram post
+
+on:
+  schedule:
+    # GitHub cron is UTC. 5PM Sydney is 07:00 UTC during AEST (winter, UTC+10)
+    # and 06:00 UTC during AEDT (summer, UTC+11). We fire at both, then the job
+    # below only proceeds when the real Australia/Sydney hour is 17 — so it
+    # posts exactly once a day regardless of daylight saving.
+    - cron: '0 6 * * *'
+    - cron: '0 7 * * *'
+  workflow_dispatch: # manual "Run workflow" button for testing
+
+permissions:
+  contents: write # to commit the rendered card + state back to the repo
+
+concurrency:
+  group: daily-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gate on 5PM Australia/Sydney
+        id: gate
+        run: |
+          HOUR=$(TZ=Australia/Sydney date +%H)
+          echo "Sydney hour is $HOUR"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "17" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            echo "Not 5PM Sydney — skipping this trigger."
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.go == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.gate.outputs.go == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install a serif font for the card
+        if: steps.gate.outputs.go == 'true'
+        run: sudo apt-get update && sudo apt-get install -y fonts-ebgaramond
+
+      - name: Install dependencies
+        if: steps.gate.outputs.go == 'true'
+        run: npm ci
+
+      - name: Render today's card
+        if: steps.gate.outputs.go == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          IG_HANDLE: ${{ vars.IG_HANDLE }}
+        run: node scripts/daily-post.mjs --dry-run
+
+      - name: Commit & push the card
+        if: steps.gate.outputs.go == 'true'
+        id: push
+        run: |
+          git config user.name "show-finder-bot"
+          git config user.email "actions@github.com"
+          git add posts/
+          git commit -m "Daily post card $(TZ=Australia/Sydney date +%Y-%m-%d)" || echo "nothing to commit"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Instagram
+        if: steps.gate.outputs.go == 'true'
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          # Immutable raw URL pinned to the commit we just pushed, so Instagram
+          # always fetches today's card (never a cached older one).
+          CARD_IMAGE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.push.outputs.sha }}/posts/latest.jpg
+        run: node scripts/daily-post.mjs --publish-only
+
+      - name: Save updated state
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          git add posts/state.json
+          git commit -m "Record posted title" || echo "nothing to commit"
+          git push || echo "nothing to push"

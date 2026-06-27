@@ -1,0 +1,15 @@
+{
+  "name": "mood-and-movies",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Auto-posts a daily movie/series recommendation to Instagram @moodandmovies_",
+  "scripts": {
+    "post": "node --env-file=.env scripts/daily-post.mjs",
+    "post:dry": "node --env-file=.env scripts/daily-post.mjs --dry-run",
+    "publish": "node --env-file=.env scripts/daily-post.mjs --publish-only"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0",
+    "sharp": "^0.33.5"
+  }
+}

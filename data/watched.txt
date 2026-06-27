@@ -1,0 +1,563 @@
+# Prasanna's watched list — one title per line.
+# Lines starting with # and blank lines are ignored.
+# This file is the source of truth for the daily Instagram pick:
+#   - "resurface" mode picks a title from here
+#   - "discover" mode avoids recommending anything already here
+# Add new titles to the bottom any time.
+
+# ── 2026 ──
+Stranger Things
+Parasakthi
+Akhanda 2: Thaandavam
+Mask
+Then Chennai
+Finch
+Inside Out
+Simple Manusan
+Everybody's Fine
+Dodgeball: A True Underdog Story
+Here Comes the Boom
+Unreal (Season 2)
+Aaromaley
+Dead Poets Society
+The Long Kiss Goodnight
+Vaa Vaathiyaar
+Dhurandhar
+The Wrecking Crew
+Beyond the Blackboard
+Nilakanta
+The Specialist
+Anaconda
+Kombuseevi
+Thalaivar Thambi Thalaimaiyil
+Hot Spot 2 Much
+Baby Girl
+Usurae
+DNA
+Kangaroo Island
+Thadayam
+Taskaree: The Smuggler's Web
+Ondimuniyum Nallapadanum
+Subhedar
+War Machine
+Police Police (Season 1)
+Made in Korea
+Life After Fighting
+Polar
+Yogi Da
+Local Times
+Pookie
+Fourth Floor
+Mercy
+The Iron Claw
+The Bear
+Mardaani 3
+Dhoolpet Police Station (S01)
+Sabdham
+My Lord
+Crime 101
+Muthu Engira Kaattaan
+Vadam
+Lucky the Superstar
+Muzzle: City of Wolves
+The Contract
+Mrithyunjay
+Night Hunter
+Konja Naal Poru Thalivaa
+Thaai Kizhavi
+Eat Pray Bark
+Sampradayini Suppini Suddapoosani
+Dreamer
+S. Saraswathi
+Lockdown
+The Secret Life of Bees
+Ustaad Bhagat Singh
+Kaa: The Forest
+Second Case of Seetharam
+Suyodhana
+Sambhavam Adhyayam Onnu
+The Family Plan 2
+The Pitt (Season 2)
+Phoenix
+Happy Raj
+My Name Is Vendetta
+Galatta Family
+Ashakal Aayiram
+Sotta Sotta Nanaiyuthu
+Biker
+Raakaasa
+Manithan Deivamagalam
+Vertical Limit
+LIK
+Kayilan
+The Madison
+Freedom Writers
+Kaalidas 2
+Dhurandhar: The Revenge
+Mr. X
+Liar Liar
+The Siege
+Tom Clancy's Jack Ryan: Ghost War
+Karuppu
+Eddie the Eagle
+Apex
+Exams
+Leader
+Romance on the Menu
+Panda Plan
+Carmeni Selvam
+Sattendru Maarudhu Vaanilai
+Dridam
+Shelter
+Teach You a Lesson
+In the Grey
+Kaakee Circus
+Kenatha Kanom
+Patriot
+Ordinary Angels
+Radio
+Kolaiseval
+Hunting Season
+Blast
+
+# ── 2025 ──
+A Quiet Place: Day One
+Haraa
+Viduthalai Part 2
+Bullet Train
+Ant-Man and the Wasp: Quantumania
+Transformers: Age of Extinction
+Hard Ball
+Maleficent
+Maleficent: Mistress of Evil
+Transformers: The Last Knight
+The Benchwarmers
+Mandhira Punnagai
+Family Padam
+Alangu
+The Smile Man
+Back in Action
+Max
+Landman
+Thiru.Manickam
+Madha Gaja Raja
+Game Changer
+Parking
+The Killer's Game
+Unstoppable
+Vanangaan
+Vidaamuyarchi
+35 Chinna Vishayam Ila
+Lara
+American Housewife (S01 & S02)
+Kadhalikka Neramillai
+Kana Kaanum Kaalangal (2024) S03
+The Gorge
+Ted Lasso (S01 | S02 | S03)
+Daaku Maharaaj
+Srikakulam Sherlock Holmes
+Bottle Radha
+Dragon
+Kudumbasthan
+Suzhal: The Vortex S02
+Driving Miss Daisy
+The Unbreakable Boy
+Thelma
+Rajakili
+Kadapuraa Kalaikuzhu
+Rekhachithram
+The Electric State
+Appuchi Graamam
+Seesaw
+Identity
+Coffee with Kadhal
+Baby and Baby
+Veera Dheera Sooran
+Mr. Housekeeping
+Fire
+Reacher (Season 3)
+Aghathiyaa
+The Life List
+Om Kali Jai Kali
+Malaysia to Amnesia
+RV
+Please Stand By
+Get Away
+The Fire Inside
+My Dog Skip
+Perusu
+Good Bad Ugly
+Court – State vs. A Nobody
+Kingston
+Murmur
+L2: Empuraan
+Suits LA
+Jhund
+Poochandi
+The Pitt (S01)
+Retro
+Tourist Family
+Black Widow
+Kishkindha Kaandam
+Ten Hours
+When Life Gives You Tangerines
+Thunderbolts
+Kadaisi Thotta
+Gangers
+The Working Man
+Mission: Impossible – The Final Reckoning
+Demolition Man
+Sumo
+Fountain of Youth
+Maranamass
+Hawkeye
+The Fundamentals of Caring
+Kraven the Hunter
+HIT3
+Nesippaya
+Devil's Double Next Level
+Enola Holmes
+Enola Holmes 2
+Land of Bad
+Maaman
+Thug Life
+The Accountant 2
+Dept. Q
+Jora Kaiya Thattunga
+Armor
+Thudarum
+Ace
+Alappuzha Gymkhana
+Spit
+The Angriest Man in Brooklyn
+Eleven
+Snowpiercer
+Vetrivel
+Oru Naal Koothu
+Jinn - The Pet
+Ground Zero
+Attack on London: Hunting the 7/7 Bombers
+Madras Matinee
+Paramasivan Fathima
+Veerayi Makkal
+Yamakaathaghi
+Bad News Bears
+Peranbu
+Tharunam
+My Cousin Vinny
+Chennai City Gangsters
+Commando
+Heads of State
+Untamed
+Sattamum Needhiyum
+Rajaputhiran
+Maargan
+The Mighty Ducks
+Vallamai
+Sitaare Zameen Par
+Paranthu Po
+Kicking & Screaming
+Wildcats
+Taking Chance
+Jurassic World Rebirth
+Wolfs
+Akkenam
+Just Cause
+School
+Sinners
+Thalaivan Thalaivii
+Megan Leavey
+Coolie
+Maayakoothu
+Gevi
+The 100
+Maareesan
+Bun Butter Jam
+Ice Road: Vengeance
+The Thursday Murder Club
+Madharaasi
+Little Big League
+Ensign Sudum Pani
+Surrender
+Jenma Natchathiram
+The Negotiator
+Mirugasirisham
+F1
+My Penguin Friend
+House Mates
+Kallan
+Iyer IPS
+Hoosiers
+Repeat
+Gandhi Kannadi
+Hunt
+Rumble in the Bronx
+Bakasura Restaurant
+My Dead Friend Zoe
+Ghaati
+War 2
+Bomb
+Tribanadhari Barbarik
+Muthal Pakkam
+Maya Puthagam
+Guts
+They Call Him OG
+Shakthi Thirumagan
+True Crime
+Rain Man
+Accused
+Desingu Raja 2
+Idli Kadai
+Mr Zoo Keeper
+Thandakaaranyam
+Blackmail
+Kambi Katna Kathai
+Last Breath
+Kiss
+Love Marriage
+3BHK
+Naalai Namadhe
+Kuttram Pudhithu
+Playdate
+Thanal
+Bison Kaalamaadan
+Right
+The Family Man (Season 3)
+Murugesan +2
+Nobody 2
+Cristina Kathirvelan
+Aaryan
+Aan Paavam Pollathathu
+Niram Maarum Ulagil
+Leg Piece
+Mass Jathara
+Delhi Crime
+Regai
+Gajaana
+Theeyavar Kulaigal Nadunga
+Kuttram Purindhavan: The Guilty One
+Kinaru
+Diesel
+Dominic and the Ladies' Purse
+Happy Birthday Luci
+Officer on Duty
+Rajini Gang
+Weapons
+Superman
+The Fantastic Four: First Steps
+Vedaa
+Sirai
+Middle Class
+Revolver Rita
+
+# ── 2024 ──
+80 Buildup
+Tiger 3
+Kuiko
+Togo
+Fargo
+911 Lone Star (Season 2)
+Reacher 2
+Odavum Mudiyathu Oliyavum Mudiyathu
+Chicago (Season 10)
+The Last of Us
+The Beekeeper
+The Holdovers
+Guntur Kaaram
+American Underdog
+Sesham Mike-il Fathima
+Outback
+Miracle on 34th Street
+Blue Star
+Singapore Saloon
+Unthinkable
+The Young and Prodigious T. S. Spivet
+Dog
+Aindhaam Thalaimurai Sidha Vaidhiya Sigamani
+Detachment
+Manjummel Boys
+Old Dads
+Thookudurai
+Kavaal
+Anweshippin Kandethum
+Merry Christmas
+Escape Plan
+Peigal Jaakirathai
+Mission Chapter 1
+Vithaikaran
+Abraham Ozler
+Fighter
+Godzilla x Kong: The New Empire
+Road House
+Marakkuma Nenjam
+NYAD
+The World's Fastest Indian
+An Unfinished Life
+The Old Way
+The Beautiful Game
+Inspector Rishi
+Rebel
+No Reservations
+A Dog's Journey
+Dog Gone
+J-Baby
+Kim's Convenience
+Pugazh
+Siren
+My Sister's Keeper
+Yavarum Vallavare
+Room
+Idiot
+Big Game
+OMG 2
+S.W.A.T. (3 seasons)
+Arthur the King
+Romeo
+XXX: State of the Union
+XXX
+Kalvan
+Ghostbusters: Afterlife
+Geostorm
+Muzzle
+Where Hope Grows
+Eight Below
+Rathnam
+Atlas
+Raja Manthiri
+Garudan
+Godzilla Minus One
+Bad Boys: Ride or Die
+A Dog's Way Home
+Hunt for the Wilderpeople
+Four Brothers
+Luther: The Fallen Sun
+Force of Nature: The Dry 2
+Next Goal Wins
+Veppam Kulir Mazhai
+Maharaja
+Kurangu Pedal
+PT Sir
+Pixels
+Trigger Warning
+Freelance
+Erin Brockovich
+Safe
+Bastille Day
+The Family Plan
+Kalki 2898 AD
+Inga Naan Thaan Kingu
+Kiss the Girls
+Devadas Brothers
+Kalathur Gramam
+Beverly Hills Cop: Axel F
+Instant Family
+In Time
+Kombu
+Indian 2
+Hit List
+Oru Nodi
+The Long Game
+Anjaamai
+Laandhar
+My Spy: The Eternal City
+Tulsa King (S01)
+The Akaali
+Deadpool & Wolverine
+The Good Mother
+Chutney Sambar (S01)
+The Help
+Saamaniyan
+Hotspot
+Ministry of Ungentlemanly Warfare
+Postman
+Kaazh
+Boomer Uncle
+Thangalaan
+Mazhai Pidikatha Manithan
+Jackpot
+Chandu Champion
+The Union
+Pulan Visaranai 2
+Raayan
+Kolanji
+Jigiri Dosthu
+Boat
+Uyir Thamizhukku
+Paul
+Bank of Dave
+A Good Person
+Rebel Ridge
+Gemini Man
+Weapon
+The GOAT
+Teenz
+The Marksman
+Raghu Thatha
+NOVP
+Thalaivettiyaan Paalayam
+Lubber Pandhu
+Pechi
+Vasco Da Gama
+The Bear (S02 & S03)
+Kadaisi Ulaga Por
+Demonte Colony 2
+Rez Ball
+Election
+Meiyazhagan
+Minmini
+Pogumidam Vegu Thooramillai
+Vaazhai
+Black
+Aavesham
+Vettaiyan
+Vazha
+Brian Banks
+Damaged
+Saripodhaa Sanivaaram
+The Instigators
+Irreverent
+Suttu Pidikka Utharavu
+Hitler
+The Lincoln Lawyer
+Kozhipannai Chelladurai
+The Wild Robot
+Amaran
+Sattam En Kaiyil
+Goli Soda Rising (S01)
+Jama
+Bloody Bugger
+The Road
+Made in Italy
+Kung Fu Panda 4
+Kanguva
+Brother
+Transformers One
+Dhonima
+Sabotage
+Saba Nayagan
+Oru Thavaru Seidhal
+Rocket Driver
+Arima Nambi
+Kumari Srimathi
+Line Man
+The Ron Clark Story
+2 Guns
+After Life
+SIR
+Nirangal Moondru
+Adharma Kadhaigal
+Thozhar Che Guevara
+Lucky Baskhar
+Jolly O Gymkhana
+Sonna Puriyathu
+Sorgavaasal
+Venom: The Last Dance
+Lal Salaam
+Red One
+The Odd Life of Timothy Green
+St. Vincent
+Naan Komali (Season 03)
+Joe
+Miss You
+Soodhu Kavvum 2
+Yellowstone
