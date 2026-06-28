@@ -92,3 +92,54 @@ jobs:
           git add posts/state.json
           git commit -m "Record posted title" || echo "nothing to commit"
           git push || echo "nothing to push"
+
+      - name: Build notification email
+        if: steps.gate.outputs.go == 'true'
+        id: email_data
+        run: |
+          if [ ! -f posts/.just-posted ]; then
+            echo "No fresh post this run — skipping email."
+            echo "send=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "send=true" >> "$GITHUB_OUTPUT"
+
+          TITLE=$(jq -r '.title' posts/latest-meta.json)
+          MODE=$(jq -r  '.mode'  posts/latest-meta.json)
+          POST_URL=$(cat posts/.just-posted)
+          CARD_URL="https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.push.outputs.sha }}/posts/latest.jpg"
+          EYEBROW=$([ "$MODE" = "resurface" ] && echo "From my shelf" || echo "Discover")
+          CAPTION=$(cat posts/latest-caption.txt)
+
+          echo "subject=🎬 Today's pick: $TITLE" >> "$GITHUB_OUTPUT"
+
+          cat > posts/.email-body.html << HTMLEOF
+          <!DOCTYPE html>
+          <html>
+          <body style="margin:0;padding:0;background:#0f0e0d;font-family:Georgia,serif">
+            <div style="max-width:480px;margin:32px auto;background:#161311;border-radius:12px;overflow:hidden;color:#f2e9dc">
+              <img src="$CARD_URL" style="width:100%;display:block" alt="$TITLE card" />
+              <div style="padding:24px">
+                <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#e0a458">$EYEBROW</p>
+                <h1 style="margin:0 0 16px;font-size:26px;line-height:1.2">$TITLE</h1>
+                <pre style="margin:0 0 20px;white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;color:#9a8c79;line-height:1.6">$CAPTION</pre>
+                <a href="$POST_URL" style="display:inline-block;background:#e0a458;color:#161311;padding:11px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px">View on Instagram →</a>
+              </div>
+            </div>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Send post notification
+        if: steps.gate.outputs.go == 'true' && steps.email_data.outputs.send == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: prasanna.trl@gmail.com
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: ${{ steps.email_data.outputs.subject }}
+          to: prasanna.trl@gmail.com
+          from: Mood & Movies <prasanna.trl@gmail.com>
+          html_body: file://posts/.email-body.html
