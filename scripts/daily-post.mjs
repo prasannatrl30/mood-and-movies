@@ -24,7 +24,30 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Anthropic from '@anthropic-ai/sdk';
-import { renderCard } from './lib/card.mjs';
+import { renderCard, THEMES } from './lib/card.mjs';
+
+function pickTheme(pick) {
+  const genre = (pick.genre ?? '').toLowerCase();
+  const lang  = pick.language ?? '';
+  const mood  = (pick.mood ?? '').toLowerCase();
+
+  // Language is the strongest signal — these cultures have distinct visual energy.
+  if (['Tamil', 'Telugu', 'Kannada', 'Malayalam'].includes(lang)) return 'ember';
+  if (['Korean', 'Japanese'].includes(lang))                       return 'ocean';
+  if (['French', 'Italian', 'Persian', 'Spanish'].includes(lang))  return 'forest';
+
+  // Genre
+  if (/thriller|crime|mystery|horror|noir/.test(genre)) return 'ocean';
+  if (/documentary/.test(genre))                        return 'forest';
+  if (/action|adventure/.test(genre))                   return 'ember';
+
+  // Mood keywords as tiebreaker
+  if (/uneasy|tense|grip|suspense|whodunit/.test(mood))          return 'ocean';
+  if (/cry|emotional|heart|love|feel something/.test(mood))      return 'dusk';
+  if (/think|true|real|worldview|understand|slow|quiet/.test(mood)) return 'forest';
+
+  return 'noir';
+}
 import { publishImage } from './lib/instagram.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -334,6 +357,8 @@ async function main() {
   if (!posterBuffer) throw new Error(`No poster found for "${pick.title}" — skipping to avoid a blank card`);
 
   const meta = [tmdb.year, pick.genre, pick.language, pick.runtime].filter(Boolean).join('  ·  ');
+  const theme = pickTheme(pick);
+  console.log(`[main] theme → ${theme}`);
   const card = await renderCard({
     posterBuffer,
     mood: pick.mood,
@@ -341,6 +366,7 @@ async function main() {
     reason: pick.reason,
     meta,
     handle: process.env.IG_HANDLE || '@moodandmovies_',
+    theme,
   });
 
   mkdirSync(join(ROOT, 'posts'), { recursive: true });

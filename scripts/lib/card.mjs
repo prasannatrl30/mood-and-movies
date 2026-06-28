@@ -17,10 +17,13 @@ import sharp from 'sharp';
 const W = 1080;
 const H = 1350;
 
-const BG = '#161311';
-const AMBER = '#e0a458';
-const CREAM = '#f2e9dc';
-const MUTED = '#9a8c79';
+export const THEMES = {
+  noir:   { BG: '#161311', ACCENT: '#e0a458', TEXT: '#f2e9dc', MUTED: '#9a8c79', GLOW: '#3a2c1c' },
+  ocean:  { BG: '#0d1520', ACCENT: '#5b9fd6', TEXT: '#ddeaf8', MUTED: '#6a8aaa', GLOW: '#0f2540' },
+  dusk:   { BG: '#160f1a', ACCENT: '#c49ed4', TEXT: '#f0e8f8', MUTED: '#887898', GLOW: '#2d1a3a' },
+  ember:  { BG: '#1a0d08', ACCENT: '#e06535', TEXT: '#f5e4dc', MUTED: '#9a6858', GLOW: '#3a1508' },
+  forest: { BG: '#0c1610', ACCENT: '#6dba85', TEXT: '#e0f0e6', MUTED: '#6a9070', GLOW: '#0f2816' },
+};
 
 const esc = (s = '') =>
   String(s)
@@ -84,7 +87,8 @@ function titleLayout(title) {
  * @param {string}  [o.handle]      footer handle
  * @returns {Promise<Buffer>}       JPEG bytes
  */
-export async function renderCard({ posterBuffer, mood, title, reason, meta, handle = '@yourhandle' }) {
+export async function renderCard({ posterBuffer, mood, title, reason, meta, handle = '@yourhandle', theme = 'noir' }) {
+  const { BG, ACCENT, TEXT, MUTED, GLOW } = THEMES[theme] ?? THEMES.noir;
   // Poster: resize to a fixed frame, rounded corners via mask.
   const pW = 464;
   const pH = 696;
@@ -141,11 +145,11 @@ export async function renderCard({ posterBuffer, mood, title, reason, meta, hand
   const overlay = `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <style>
-    .eyebrow { font-family: 'EB Garamond', Georgia, serif; font-size: ${ebSize}px; letter-spacing: ${ebSpacing}px; fill: ${AMBER}; }
-    .title   { font-family: 'EB Garamond', Georgia, serif; font-size: ${titleSize}px; font-weight: 600; fill: ${CREAM}; }
+    .eyebrow { font-family: 'EB Garamond', Georgia, serif; font-size: ${ebSize}px; letter-spacing: ${ebSpacing}px; fill: ${ACCENT}; }
+    .title   { font-family: 'EB Garamond', Georgia, serif; font-size: ${titleSize}px; font-weight: 600; fill: ${TEXT}; }
     .reason  { font-family: 'EB Garamond', Georgia, serif; font-size: 33px; font-style: italic; fill: ${MUTED}; }
     .meta    { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 2px; fill: ${MUTED}; }
-    .handle  { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 3px; fill: ${AMBER}; }
+    .handle  { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 3px; fill: ${ACCENT}; }
   </style>
 
   <text class="eyebrow" x="${cx}" y="${eyebrowY}" text-anchor="middle">${
@@ -155,16 +159,16 @@ export async function renderCard({ posterBuffer, mood, title, reason, meta, hand
   <text class="reason"  x="${cx}" y="${reasonY}"              text-anchor="middle">${reasonTspans}</text>
   ${meta ? `<text class="meta" x="${cx}" y="${metaY}" text-anchor="middle">${esc(meta)}</text>` : ''}
 
-  <line x1="${cx - 40}" y1="${dividerY}" x2="${cx + 40}" y2="${dividerY}" stroke="${AMBER}" stroke-width="1.5" opacity="0.6"/>
+  <line x1="${cx - 40}" y1="${dividerY}" x2="${cx + 40}" y2="${dividerY}" stroke="${ACCENT}" stroke-width="1.5" opacity="0.6"/>
   <text class="handle" x="${cx}" y="${handleY}" text-anchor="middle">${esc(handle)}</text>
 </svg>`;
 
-  // Subtle vignette + amber glow behind the poster.
+  // Subtle vignette + theme-coloured glow behind the poster.
   const backdrop = `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="glow" cx="50%" cy="34%" r="55%">
-      <stop offset="0%" stop-color="#3a2c1c" stop-opacity="0.9"/>
+      <stop offset="0%" stop-color="${GLOW}" stop-opacity="0.9"/>
       <stop offset="100%" stop-color="${BG}" stop-opacity="0"/>
     </radialGradient>
   </defs>
