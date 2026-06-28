@@ -67,6 +67,23 @@ const sydneyDate = () =>
 const alreadyPostedToday = (state) =>
   process.env.FORCE_POST !== '1' && state.posted.some((p) => p.date === sydneyDate());
 
+function getSydneyDay() {
+  return new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', weekday: 'long' })
+    .formatToParts(new Date())
+    .find((p) => p.type === 'weekday').value;
+}
+
+// Each day has a distinct emotional energy that drives what to pick and how to hook it.
+const DAY_VIBES = {
+  Monday:    'quietly powerful and perspective-shifting — the kind that changes how you see something by the end',
+  Tuesday:   'propulsive and completely gripping — something that makes two hours disappear',
+  Wednesday: 'clever and deeply satisfying — a film with a payoff that earns every minute of setup',
+  Thursday:  'sharp, fun and full of energy — something with momentum and wit that leaves you buzzing',
+  Friday:    'cinematic and unforgettable — the kind of film you cancel plans for and remember for weeks',
+  Saturday:  'ambitious and fully immersive — something sprawling you can completely lose yourself in',
+  Sunday:    'emotionally rich and unhurried — something patient that lingers long after the credits roll',
+};
+
 /* ── Claude ─────────────────────────────────────────────────── */
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -82,14 +99,14 @@ const RECOMMEND_TOOL = {
       format:   { type: 'string', enum: ['Movie', 'Series', 'Documentary', 'Limited Series'] },
       language: { type: 'string', description: 'Primary language' },
       runtime:  { type: 'string', description: '"1h 52m" for movies, "3 seasons" for series' },
-      reason:   { type: 'string', description: '12-18 words, punchy and evocative, no spoilers' },
-      mood:     { type: 'string', description: 'Audience-facing occasion phrase, 4-7 words, lowercase. E.g. "for a quiet evening alone" or "when you need a good cry" or "if you want to feel something"' },
+      reason:   { type: 'string', description: 'Exactly one sentence, 15-20 words. Write like a friend who just finished watching — name the specific emotional experience the viewer will have, not what happens. No plot. No spoilers. Creates FOMO.' },
+      mood:     { type: 'string', description: 'Audience-facing occasion phrase, 4-7 words, lowercase. Specific to this film\'s emotional pull. E.g. "for a quiet evening alone" or "when you need a good cry" or "if you want to feel something real"' },
     },
     required: ['title', 'genre', 'format', 'language', 'runtime', 'reason', 'mood'],
   },
 };
 
-const SYSTEM = `You are an expert film/TV curator with deep knowledge of global cinema and television — Hollywood, Bollywood, Korean, Tamil, Japanese, French and beyond. Write recommendations that feel like a tasteful friend's text, never marketing copy.`;
+const SYSTEM = `You are a deeply opinionated film and TV curator with encyclopedic knowledge of global cinema — Hollywood, Tamil, Korean, Japanese, French, Italian and beyond. You recommend like a brilliant friend who watches obsessively: direct, specific, occasionally surprising. Your hooks name the exact emotional experience — what the viewer will feel in their chest — not what happens on screen. You never summarise plot. You never write like a critic or a press release. You create genuine desire to watch.`;
 
 async function callClaude(userPrompt) {
   const msg = await client.messages.create({
@@ -173,30 +190,36 @@ function chooseMode(state) {
 async function buildResurfacePick(watched, postedSet) {
   const pool = watched.filter((t) => !postedSet.has(norm(t)));
   if (!pool.length) throw new Error('Resurface pool empty — everything has been posted');
-  const title = pool[Math.floor(Math.random() * pool.length)];
+
+  const vibe = DAY_VIBES[getSydneyDay()];
 
   const rec = await callClaude(
-    `From my watch history, today I'm resurfacing this title as a recommendation: "${title}".\n` +
-    `Return it via the tool with an accurate genre, format, language, runtime, and a fresh 12-18 word reason ` +
-    `to watch it — evocative, no spoilers. Keep the title exactly as a clean canonical name (drop any season/part notes).`
+    `Today's energy: ${vibe}.\n\n` +
+    `From my complete watch history below, pick the ONE title that best matches today's energy — ` +
+    `not randomly, but because it genuinely fits this specific feeling.\n\n` +
+    `My watch history (you must pick from this list only):\n` +
+    pool.map((t) => `- ${t}`).join('\n') +
+    `\n\nWrite a hook that makes someone feel like they are missing out if they skip this tonight. ` +
+    `Name the emotional experience — what they will feel — not what happens in the film.`
   );
   return { ...rec, mode: 'resurface' };
 }
 
 async function buildDiscoverPick(watched, postedSet) {
-  // Give Claude a taste sample + the exclusion list (sampled to keep tokens sane).
-  const sample = [...watched].sort(() => Math.random() - 0.5).slice(0, 50);
-  const excludeFromPosted = [...postedSet];
+  const vibe = DAY_VIBES[getSydneyDay()];
 
   const rec = await callClaude(
-    `Here is a sample of what I've watched and enjoyed — note the mix of global cinema, Tamil, and Hollywood:\n` +
-    sample.map((t) => `- ${t}`).join('\n') +
-    `\n\nRecommend ONE excellent title I have likely NOT seen, matched to this taste. ` +
-    `Lean towards something a little under-the-radar rather than the obvious blockbuster. ` +
-    `It must not be any title in my watch history. Return it via the tool with a 12-18 word reason.`
+    `Today's energy: ${vibe}.\n\n` +
+    `Here is my complete watch history — use it to understand my taste deeply:\n` +
+    watched.map((t) => `- ${t}`).join('\n') +
+    `\n\nRecommend ONE film or series I have NOT seen that fits today's energy perfectly. ` +
+    `It must not be anything from my watch history above. ` +
+    `Don't pick the first obvious choice — pick the second one, the one that someone who really ` +
+    `knows cinema would suggest. Under-the-radar over blockbuster. ` +
+    `Write a hook that reads like a friend texting at midnight who just finished watching: ` +
+    `visceral, specific, creates FOMO. Name what the viewer will feel, not what happens.`
   );
 
-  // Guard: if Claude returns something already watched/posted, fall back to resurface.
   if (postedSet.has(norm(rec.title)) || watched.some((t) => norm(t) === norm(rec.title))) {
     console.log(`[pick] discover returned a known title (${rec.title}) — falling back to resurface`);
     return buildResurfacePick(watched, postedSet);

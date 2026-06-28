@@ -49,6 +49,20 @@ function wrap(text, maxChars, maxLines) {
   return lines;
 }
 
+/** Scale and optionally wrap the mood eyebrow so it never overflows the card. */
+function eyebrowLayout(text) {
+  const upper = text.toUpperCase();
+  // Approximate px per character at a given size with letter-spacing.
+  // size 26 + spacing 6 → ~21.6px/char; size 21 + spacing 4 → ~16.6px/char
+  const fits = (size, spacing, chars) => (size * 0.6 + spacing) * chars <= W - 120;
+  if (fits(26, 6, upper.length)) return { size: 26, spacing: 6, lines: [upper] };
+  if (fits(21, 4, upper.length)) return { size: 21, spacing: 4, lines: [upper] };
+  // Wrap to two lines at smaller size.
+  const size = 21; const spacing = 4;
+  const maxChars = Math.floor((W - 120) / (size * 0.6 + spacing));
+  return { size, spacing, lines: wrap(upper, maxChars, 2) };
+}
+
 /** Pick a serif size that keeps a title on at most two lines. */
 function titleLayout(title) {
   const len = title.length;
@@ -97,14 +111,17 @@ export async function renderCard({ posterBuffer, mood, title, reason, meta, hand
   ).blur(22).png().toBuffer();
 
   const { size: titleSize, lines: titleLines } = titleLayout(title);
+  const { size: ebSize, spacing: ebSpacing, lines: ebLines } = eyebrowLayout(mood ?? '');
   const reasonLines = wrap(reason, 46, 3);
 
   // Everything below the poster flows as one stack, each element placed a fixed
   // gap after the previous one's bottom — so nothing collides regardless of how
-  // tall the title or reason wraps.
+  // tall the mood, title or reason wraps.
   const cx = W / 2;
-  const eyebrowY = pY + pH + 56;
-  const y = eyebrowY + titleSize + 20; // first title-line baseline
+  const ebLineH = ebSize + 8;
+  const eyebrowY = pY + pH + 52;
+  const eyebrowBottom = eyebrowY + (ebLines.length - 1) * ebLineH;
+  const y = eyebrowBottom + titleSize + 20; // first title-line baseline
 
   const titleTspans = titleLines
     .map((ln, i) => `<tspan x="${cx}" dy="${i === 0 ? 0 : titleSize + 8}">${esc(ln)}</tspan>`)
@@ -124,14 +141,16 @@ export async function renderCard({ posterBuffer, mood, title, reason, meta, hand
   const overlay = `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <style>
-    .eyebrow { font-family: 'EB Garamond', Georgia, serif; font-size: 26px; letter-spacing: 6px; fill: ${AMBER}; }
+    .eyebrow { font-family: 'EB Garamond', Georgia, serif; font-size: ${ebSize}px; letter-spacing: ${ebSpacing}px; fill: ${AMBER}; }
     .title   { font-family: 'EB Garamond', Georgia, serif; font-size: ${titleSize}px; font-weight: 600; fill: ${CREAM}; }
     .reason  { font-family: 'EB Garamond', Georgia, serif; font-size: 33px; font-style: italic; fill: ${MUTED}; }
     .meta    { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 2px; fill: ${MUTED}; }
     .handle  { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 3px; fill: ${AMBER}; }
   </style>
 
-  <text class="eyebrow" x="${cx}" y="${eyebrowY}" text-anchor="middle">${esc((mood ?? '').toUpperCase())}</text>
+  <text class="eyebrow" x="${cx}" y="${eyebrowY}" text-anchor="middle">${
+    ebLines.map((ln, i) => `<tspan x="${cx}" dy="${i === 0 ? 0 : ebLineH}">${esc(ln)}</tspan>`).join('')
+  }</text>
   <text class="title"   x="${cx}" y="${y}"                    text-anchor="middle">${titleTspans}</text>
   <text class="reason"  x="${cx}" y="${reasonY}"              text-anchor="middle">${reasonTspans}</text>
   ${meta ? `<text class="meta" x="${cx}" y="${metaY}" text-anchor="middle">${esc(meta)}</text>` : ''}
