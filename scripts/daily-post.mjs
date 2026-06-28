@@ -241,8 +241,6 @@ async function publishOnly() {
   const state = loadState();
   state.posted.push({ date: meta.date, title: meta.title, mode: meta.mode, mediaId: id });
   saveState(state);
-  // Signal to the CI email step that a fresh post happened this run.
-  writeFileSync(join(ROOT, 'posts/.just-posted'), permalink ?? id ?? '');
 }
 
 async function main() {
