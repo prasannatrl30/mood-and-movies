@@ -83,8 +83,9 @@ const RECOMMEND_TOOL = {
       language: { type: 'string', description: 'Primary language' },
       runtime:  { type: 'string', description: '"1h 52m" for movies, "3 seasons" for series' },
       reason:   { type: 'string', description: '12-18 words, punchy and evocative, no spoilers' },
+      mood:     { type: 'string', description: 'Audience-facing occasion phrase, 4-7 words, lowercase. E.g. "for a quiet evening alone" or "when you need a good cry" or "if you want to feel something"' },
     },
-    required: ['title', 'genre', 'format', 'language', 'runtime', 'reason'],
+    required: ['title', 'genre', 'format', 'language', 'runtime', 'reason', 'mood'],
   },
 };
 
@@ -106,7 +107,14 @@ async function callClaude(userPrompt) {
 
 /* ── TMDB ───────────────────────────────────────────────────── */
 
-async function enrichTMDB(title) {
+// Maps Claude's language label to TMDB's ISO 639-1 original_language code.
+const LANG_CODE = {
+  Tamil: 'ta', Hindi: 'hi', Korean: 'ko', Japanese: 'ja',
+  French: 'fr', Italian: 'it', Spanish: 'es', Malayalam: 'ml',
+  Telugu: 'te', Kannada: 'kn', Bengali: 'bn',
+};
+
+async function enrichTMDB(title, language) {
   const KEY = process.env.TMDB_API_KEY;
   if (!KEY) throw new Error('TMDB_API_KEY is required');
 
@@ -115,7 +123,18 @@ async function enrichTMDB(title) {
   const data = await (await fetch(searchUrl)).json();
 
   const candidates = (data.results ?? []).filter((r) => r.media_type === 'movie' || r.media_type === 'tv');
-  const result = candidates.find((r) => r.poster_path) ?? candidates[0] ?? null;
+  const langCode = LANG_CODE[language] ?? null;
+  // Quality score: popular well-rated films beat obscure title collisions.
+  // Language boost: if Claude said Tamil/Korean/etc, strongly prefer results
+  // where TMDB's original_language matches — fixes e.g. "Forensic" (Tamil film)
+  // vs "Forensic Files" (US TV show with more votes).
+  const qualityScore = (r) => {
+    const base = (r.vote_average ?? 0) * Math.log10((r.vote_count ?? 0) + 10);
+    const langMatch = langCode && r.original_language === langCode ? 3 : 0;
+    return base + langMatch;
+  };
+  const sorted = [...candidates].sort((a, b) => qualityScore(b) - qualityScore(a));
+  const result = sorted.find((r) => r.poster_path) ?? sorted[0] ?? null;
   if (!result) return { poster: null, year: null, rating: null, streaming: [] };
 
   let streaming = [];
@@ -161,7 +180,7 @@ async function buildResurfacePick(watched, postedSet) {
     `Return it via the tool with an accurate genre, format, language, runtime, and a fresh 12-18 word reason ` +
     `to watch it — evocative, no spoilers. Keep the title exactly as a clean canonical name (drop any season/part notes).`
   );
-  return { ...rec, mode: 'resurface', eyebrow: 'From my shelf' };
+  return { ...rec, mode: 'resurface' };
 }
 
 async function buildDiscoverPick(watched, postedSet) {
@@ -182,7 +201,7 @@ async function buildDiscoverPick(watched, postedSet) {
     console.log(`[pick] discover returned a known title (${rec.title}) — falling back to resurface`);
     return buildResurfacePick(watched, postedSet);
   }
-  return { ...rec, mode: 'discover', eyebrow: 'Discover' };
+  return { ...rec, mode: 'discover' };
 }
 
 /* ── caption ────────────────────────────────────────────────── */
@@ -266,16 +285,16 @@ async function main() {
       : await buildDiscoverPick(watched, postedSet);
   console.log(`[main] pick:`, JSON.stringify(pick));
 
-  const tmdb = await enrichTMDB(pick.title);
+  const tmdb = await enrichTMDB(pick.title, pick.language);
   console.log(`[main] tmdb:`, JSON.stringify(tmdb));
 
   const posterBuffer = await fetchPosterBuffer(tmdb.poster);
   if (!posterBuffer) throw new Error(`No poster found for "${pick.title}" — skipping to avoid a blank card`);
 
-  const meta = [tmdb.year, pick.genre, pick.runtime].filter(Boolean).join('  ·  ');
+  const meta = [tmdb.year, pick.genre, pick.language, pick.runtime].filter(Boolean).join('  ·  ');
   const card = await renderCard({
     posterBuffer,
-    eyebrow: pick.eyebrow,
+    mood: pick.mood,
     title: pick.title,
     reason: pick.reason,
     meta,

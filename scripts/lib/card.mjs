@@ -70,7 +70,7 @@ function titleLayout(title) {
  * @param {string}  [o.handle]      footer handle
  * @returns {Promise<Buffer>}       JPEG bytes
  */
-export async function renderCard({ posterBuffer, eyebrow, title, reason, meta, handle = '@yourhandle' }) {
+export async function renderCard({ posterBuffer, mood, title, reason, meta, handle = '@yourhandle' }) {
   // Poster: resize to a fixed frame, rounded corners via mask.
   const pW = 464;
   const pH = 696;
@@ -87,6 +87,14 @@ export async function renderCard({ posterBuffer, eyebrow, title, reason, meta, h
     }])
     .png()
     .toBuffer();
+
+  // Drop shadow behind the poster — blur a dark rounded rect so any poster
+  // (including light-background ones) sits naturally on the dark card.
+  const shadowBuf = await sharp(
+    Buffer.from(`<svg width="${W}" height="${H}">
+      <rect x="${pX}" y="${pY + 10}" width="${pW}" height="${pH}" rx="20" ry="20" fill="black"/>
+    </svg>`)
+  ).blur(22).png().toBuffer();
 
   const { size: titleSize, lines: titleLines } = titleLayout(title);
   const reasonLines = wrap(reason, 46, 3);
@@ -123,7 +131,7 @@ export async function renderCard({ posterBuffer, eyebrow, title, reason, meta, h
     .handle  { font-family: 'EB Garamond', Georgia, serif; font-size: 25px; letter-spacing: 3px; fill: ${AMBER}; }
   </style>
 
-  <text class="eyebrow" x="${cx}" y="${eyebrowY}" text-anchor="middle">${esc(eyebrow.toUpperCase())}</text>
+  <text class="eyebrow" x="${cx}" y="${eyebrowY}" text-anchor="middle">${esc((mood ?? '').toUpperCase())}</text>
   <text class="title"   x="${cx}" y="${y}"                    text-anchor="middle">${titleTspans}</text>
   <text class="reason"  x="${cx}" y="${reasonY}"              text-anchor="middle">${reasonTspans}</text>
   ${meta ? `<text class="meta" x="${cx}" y="${metaY}" text-anchor="middle">${esc(meta)}</text>` : ''}
@@ -147,6 +155,7 @@ export async function renderCard({ posterBuffer, eyebrow, title, reason, meta, h
   return sharp({ create: { width: W, height: H, channels: 3, background: BG } })
     .composite([
       { input: Buffer.from(backdrop), top: 0, left: 0 },
+      { input: shadowBuf, top: 0, left: 0 },
       { input: roundedPoster, top: pY, left: Math.round(pX) },
       { input: Buffer.from(overlay), top: 0, left: 0 },
     ])
