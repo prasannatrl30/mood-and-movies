@@ -2,12 +2,16 @@ name: Daily Instagram post
 
 on:
   schedule:
-    # GitHub cron is UTC. 5PM Sydney is 07:00 UTC during AEST (winter, UTC+10)
-    # and 06:00 UTC during AEDT (summer, UTC+11). We fire at both, then the job
-    # below only proceeds when the real Australia/Sydney hour is 17 — so it
-    # posts exactly once a day regardless of daylight saving.
-    - cron: '0 6 * * *'
-    - cron: '0 7 * * *'
+    # GitHub cron is UTC and best-effort (top-of-hour slots get heavily delayed),
+    # so we fire several times off the :00 mark across the window that contains
+    # 5PM Sydney — 06:xx UTC during AEDT (summer, UTC+11) and 07:xx UTC during
+    # AEST (winter, UTC+10). The gate below only proceeds when the real Sydney
+    # hour is 17 or 18, and a same-day dedup guard in the script guarantees it
+    # posts at most once a day no matter how many firings land.
+    - cron: '7 6 * * *'
+    - cron: '37 6 * * *'
+    - cron: '7 7 * * *'
+    - cron: '37 7 * * *'
   workflow_dispatch: # manual "Run workflow" button for testing
 
 permissions:
@@ -26,11 +30,13 @@ jobs:
         run: |
           HOUR=$(TZ=Australia/Sydney date +%H)
           echo "Sydney hour is $HOUR"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "17" ]; then
+          # Accept 17 and 18 to absorb GitHub's cron delays; the script's
+          # same-day dedup guard prevents any double-post within that window.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "17" ] || [ "$HOUR" = "18" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
           else
             echo "go=false" >> "$GITHUB_OUTPUT"
-            echo "Not 5PM Sydney — skipping this trigger."
+            echo "Outside the 5PM Sydney window — skipping this trigger."
           fi
 
       - name: Checkout

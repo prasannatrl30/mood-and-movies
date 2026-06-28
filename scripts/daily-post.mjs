@@ -59,6 +59,14 @@ function saveState(state) {
 
 const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+// Today's date in Sydney (YYYY-MM-DD) — used both for filenames and the
+// same-day dedup guard, so multiple cron firings can never double-post.
+const sydneyDate = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney' }).format(new Date());
+
+const alreadyPostedToday = (state) =>
+  process.env.FORCE_POST !== '1' && state.posted.some((p) => p.date === sydneyDate());
+
 /* ── Claude ─────────────────────────────────────────────────── */
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -213,6 +221,10 @@ function buildCaption(pick, tmdb) {
 /* ── main ───────────────────────────────────────────────────── */
 
 async function publishOnly() {
+  if (alreadyPostedToday(loadState())) {
+    console.log(`[publish] already posted today (${sydneyDate()}) — skipping.`);
+    return;
+  }
   const caption = readFileSync(join(ROOT, 'posts/latest-caption.txt'), 'utf8');
   const meta = JSON.parse(readFileSync(join(ROOT, 'posts/latest-meta.json'), 'utf8'));
   const imageUrl = process.env.CARD_IMAGE_URL;
@@ -236,6 +248,12 @@ async function main() {
 
   const watched = loadWatched();
   const state = loadState();
+
+  if (alreadyPostedToday(state)) {
+    console.log(`[main] already posted today (${sydneyDate()}) — nothing to do.`);
+    return;
+  }
+
   const postedSet = new Set(state.posted.map((p) => norm(p.title)));
   console.log(`[main] ${watched.length} watched titles, ${state.posted.length} posted so far. dry-run=${DRY_RUN}`);
 
@@ -265,7 +283,7 @@ async function main() {
   });
 
   mkdirSync(join(ROOT, 'posts'), { recursive: true });
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = sydneyDate();
   writeFileSync(join(ROOT, 'posts/latest.jpg'), card);
   writeFileSync(join(ROOT, `posts/${stamp}.jpg`), card);
   const caption = buildCaption(pick, tmdb);
