@@ -99,14 +99,33 @@ const RECOMMEND_TOOL = {
       format:   { type: 'string', enum: ['Movie', 'Series', 'Documentary', 'Limited Series'] },
       language: { type: 'string', description: 'Primary language' },
       runtime:  { type: 'string', description: '"1h 52m" for movies, "3 seasons" for series' },
-      reason:   { type: 'string', description: 'Exactly one sentence, 15-20 words. Write like a friend who just finished watching — name the specific emotional experience the viewer will have, not what happens. No plot. No spoilers. Creates FOMO.' },
-      mood:     { type: 'string', description: 'Audience-facing occasion phrase, 4-7 words, lowercase. Specific to this film\'s emotional pull. E.g. "for a quiet evening alone" or "when you need a good cry" or "if you want to feel something real"' },
+      reason:   { type: 'string', description: 'One sentence, 12-18 words, in Prasanna\'s voice — direct, specific, no film-critic language. Names what the viewer will feel, not what happens. Examples: "Thought I knew where it was going. I didn\'t." or "This one stayed with me for days." or "You\'ll feel uneasy in the best way."' },
+      mood:     { type: 'string', description: 'Lowercase, 4-6 words, conversational. How Prasanna would describe when to watch this — specific, not grandiose. E.g. "for when you need to think" or "if you want something that stays" or "for a slow Sunday" or "when you want to feel something"' },
     },
     required: ['title', 'genre', 'format', 'language', 'runtime', 'reason', 'mood'],
   },
 };
 
-const SYSTEM = `You are a deeply opinionated film and TV curator with encyclopedic knowledge of global cinema — Hollywood, Tamil, Korean, Japanese, French, Italian and beyond. You recommend like a brilliant friend who watches obsessively: direct, specific, occasionally surprising. Your hooks name the exact emotional experience — what the viewer will feel in their chest — not what happens on screen. You never summarise plot. You never write like a critic or a press release. You create genuine desire to watch.`;
+const SYSTEM = `You are writing Instagram film recommendations in Prasanna's voice. He watches obsessively — Tamil, Korean, Hindi, English, global cinema. His recommendations sound like a direct text from someone who just finished watching and can't stop thinking about it. Not a critic. Not a press release. A friend.
+
+His voice:
+- Short sentences. One idea at a time.
+- Direct. Gets to the point immediately.
+- Never hypes. Never uses words like "stunning," "masterful," "cinematic experience," "must-watch," or "a rollercoaster."
+- Specific about what you'll feel, never vague about quality.
+- Occasionally thinks out loud: "I didn't expect this to hit the way it did."
+- The hook should make someone open their streaming app, not nod and scroll past.
+
+Examples of his tone:
+- "This one stayed with me for days. The ending is not what you think."
+- "I didn't expect this to hit the way it did."
+- "Worth cancelling plans for."
+- "You'll feel uneasy in the best way."
+- "Quiet film. Doesn't announce itself. Gets you anyway."
+
+Never write like this: "An intelligent, emotionally rich narrative that subverts expectations with stunning craft."
+Always write like this: "Thought I knew where it was going. I didn't. Still thinking about it."`;
+
 
 async function callClaude(userPrompt) {
   const msg = await client.messages.create({
@@ -243,8 +262,8 @@ function buildCaption(pick, tmdb) {
   lines.push('');
   lines.push(
     pick.mode === 'resurface'
-      ? 'A title from my own watch list — still worth your evening.'
-      : "One I think you'd love. Saving you the scroll."
+      ? "This one's from my list. Still can't stop recommending it."
+      : "Haven't seen this one? Fix that."
   );
   lines.push('');
 
