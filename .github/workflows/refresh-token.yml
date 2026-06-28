@@ -1,0 +1,29 @@
+name: Refresh Instagram token
+
+on:
+  schedule:
+    # 1st of every month at 10:00 UTC — well before the 60-day expiry.
+    - cron: '0 10 1 * *'
+  workflow_dispatch: # manual trigger for testing
+
+permissions:
+  contents: none # no repo writes needed
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Refresh token and update secret
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT_SECRETS_WRITE }}
+        run: node scripts/refresh-token.mjs
