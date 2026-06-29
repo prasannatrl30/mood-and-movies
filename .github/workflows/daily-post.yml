@@ -2,17 +2,26 @@ name: Daily Instagram post
 
 on:
   schedule:
-    # GitHub cron is UTC and best-effort (top-of-hour slots get heavily delayed),
-    # so we fire several times off the :00 mark across the window that contains
-    # 5PM Sydney — 06:xx UTC during AEDT (summer, UTC+11) and 07:xx UTC during
-    # AEST (winter, UTC+10). The gate below only proceeds when the real Sydney
-    # hour is 17 or 18, and a same-day dedup guard in the script guarantees it
-    # posts at most once a day no matter how many firings land.
-    - cron: '7 6 * * *'
-    - cron: '37 6 * * *'
-    - cron: '7 7 * * *'
-    - cron: '37 7 * * *'
-  workflow_dispatch: # manual "Run workflow" button for testing
+    # 15 slots every 10 minutes across 06:00–08:30 UTC, covering both
+    # AEDT (UTC+11, summer) and AEST (UTC+10, winter) 5PM windows.
+    # The gate only proceeds when Sydney hour is 16–19; the same-day
+    # dedup guard in the script guarantees at most one post per day.
+    - cron: '0 6 * * *'
+    - cron: '10 6 * * *'
+    - cron: '20 6 * * *'
+    - cron: '30 6 * * *'
+    - cron: '40 6 * * *'
+    - cron: '50 6 * * *'
+    - cron: '0 7 * * *'
+    - cron: '10 7 * * *'
+    - cron: '20 7 * * *'
+    - cron: '30 7 * * *'
+    - cron: '40 7 * * *'
+    - cron: '50 7 * * *'
+    - cron: '0 8 * * *'
+    - cron: '15 8 * * *'
+    - cron: '30 8 * * *'
+  workflow_dispatch: # manual trigger + used by cron-job.org external watchdog
 
 permissions:
   contents: write # to commit the rendered card + state back to the repo
@@ -32,7 +41,7 @@ jobs:
           echo "Sydney hour is $HOUR"
           # Accept 17 and 18 to absorb GitHub's cron delays; the script's
           # same-day dedup guard prevents any double-post within that window.
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "17" ] || [ "$HOUR" = "18" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "16" ] || [ "$HOUR" = "17" ] || [ "$HOUR" = "18" ] || [ "$HOUR" = "19" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
           else
             echo "go=false" >> "$GITHUB_OUTPUT"
