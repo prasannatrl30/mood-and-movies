@@ -183,16 +183,19 @@ async function enrichTMDB(title, language) {
 
   const candidates = (data.results ?? []).filter((r) => r.media_type === 'movie' || r.media_type === 'tv');
   const langCode = LANG_CODE[language] ?? null;
-  // Quality score: popular well-rated films beat obscure title collisions.
-  // Language boost: if Claude said Tamil/Korean/etc, strongly prefer results
-  // where TMDB's original_language matches — fixes e.g. "Forensic" (Tamil film)
-  // vs "Forensic Files" (US TV show with more votes).
-  const qualityScore = (r) => {
-    const base = (r.vote_average ?? 0) * Math.log10((r.vote_count ?? 0) + 10);
-    const langMatch = langCode && r.original_language === langCode ? 3 : 0;
-    return base + langMatch;
-  };
-  const sorted = [...candidates].sort((a, b) => qualityScore(b) - qualityScore(a));
+  const qualityScore = (r) => (r.vote_average ?? 0) * Math.log10((r.vote_count ?? 0) + 10);
+
+  // When a non-English regional language is specified, try language-exact matches
+  // first — prevents e.g. "Court" (Marathi) returning Night Court (US sitcom).
+  const isRegional = langCode && langCode !== 'en';
+  const langExact = isRegional ? candidates.filter((r) => r.original_language === langCode) : [];
+  const rest = isRegional
+    ? candidates.filter((r) => r.original_language !== langCode)
+    : candidates;
+
+  const sortedExact = langExact.sort((a, b) => qualityScore(b) - qualityScore(a));
+  const sortedRest  = rest.sort((a, b) => qualityScore(b) - qualityScore(a));
+  const sorted = [...sortedExact, ...sortedRest];
   const result = sorted.find((r) => r.poster_path) ?? sorted[0] ?? null;
   if (!result) return { poster: null, year: null, rating: null, streaming: [] };
 
