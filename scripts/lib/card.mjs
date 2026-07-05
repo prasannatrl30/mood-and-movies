@@ -97,12 +97,30 @@ export async function renderCard({ posterBuffer, mood, title, reason, meta, hand
 
   const roundedPoster = await sharp(posterBuffer)
     .resize(pW, pH, { fit: 'cover', position: 'attention' })
-    .composite([{
-      input: Buffer.from(
-        `<svg width="${pW}" height="${pH}"><rect x="0" y="0" width="${pW}" height="${pH}" rx="20" ry="20"/></svg>`
-      ),
-      blend: 'dest-in',
-    }])
+    .composite([
+      {
+        // Dark vignette on poster edges — pulls any light-colored poster into the
+        // dark card so it feels cinematic regardless of original poster palette.
+        input: Buffer.from(
+          `<svg width="${pW}" height="${pH}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="v" cx="50%" cy="50%" r="70%">
+                <stop offset="55%" stop-color="black" stop-opacity="0"/>
+                <stop offset="100%" stop-color="black" stop-opacity="0.55"/>
+              </radialGradient>
+            </defs>
+            <rect width="${pW}" height="${pH}" fill="url(#v)"/>
+          </svg>`
+        ),
+        blend: 'over',
+      },
+      {
+        input: Buffer.from(
+          `<svg width="${pW}" height="${pH}"><rect x="0" y="0" width="${pW}" height="${pH}" rx="20" ry="20"/></svg>`
+        ),
+        blend: 'dest-in',
+      },
+    ])
     .png()
     .toBuffer();
 
