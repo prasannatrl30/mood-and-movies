@@ -26,7 +26,9 @@ import { fileURLToPath } from 'node:url';
 import Anthropic from '@anthropic-ai/sdk';
 import { renderCard, THEMES } from './lib/card.mjs';
 
-function pickTheme(pick) {
+const FALLBACK_THEMES = ['noir', 'dusk', 'ember'];
+
+function pickTheme(pick, postCount = 0) {
   const genre = (pick.genre ?? '').toLowerCase();
   const lang  = pick.language ?? '';
   const mood  = (pick.mood ?? '').toLowerCase();
@@ -42,11 +44,12 @@ function pickTheme(pick) {
   if (/action|adventure/.test(genre))                   return 'ember';
 
   // Mood keywords as tiebreaker
-  if (/uneasy|tense|grip|suspense|whodunit/.test(mood))          return 'ocean';
-  if (/cry|emotional|heart|love|feel something/.test(mood))      return 'dusk';
+  if (/uneasy|tense|grip|suspense|whodunit/.test(mood))             return 'ocean';
+  if (/cry|emotional|heart|love|feel something/.test(mood))         return 'dusk';
   if (/think|true|real|worldview|understand|slow|quiet/.test(mood)) return 'forest';
 
-  return 'noir';
+  // Cycle noir → dusk → ember so the fallback never repeats the same palette twice.
+  return FALLBACK_THEMES[postCount % FALLBACK_THEMES.length];
 }
 import { publishImage } from './lib/instagram.mjs';
 
@@ -360,7 +363,7 @@ async function main() {
   if (!posterBuffer) throw new Error(`No poster found for "${pick.title}" — skipping to avoid a blank card`);
 
   const meta = [tmdb.year, pick.genre, pick.language, pick.runtime].filter(Boolean).join('  ·  ');
-  const theme = pickTheme(pick);
+  const theme = pickTheme(pick, state.posted.length);
   console.log(`[main] theme → ${theme}`);
   const card = await renderCard({
     posterBuffer,
