@@ -121,6 +121,7 @@ const RECOMMEND_TOOL = {
     type: 'object',
     properties: {
       title:    { type: 'string', description: 'Plain title, no year' },
+      year:     { type: 'integer', description: 'Release year (first-air year for series). Used to verify the poster match — be accurate.' },
       genre:    { type: 'string', description: 'One short genre label' },
       format:   { type: 'string', enum: ['Movie', 'Series', 'Documentary', 'Limited Series'] },
       language: { type: 'string', description: 'Primary language' },
@@ -128,7 +129,7 @@ const RECOMMEND_TOOL = {
       reason:   { type: 'string', description: 'One sentence, 12-18 words, in Prasanna\'s voice — direct, specific, no film-critic language. Names what the viewer will feel, not what happens. Examples: "Thought I knew where it was going. I didn\'t." or "This one stayed with me for days." or "You\'ll feel uneasy in the best way."' },
       mood:     { type: 'string', description: 'Lowercase, 4-6 words, conversational. How Prasanna would describe when to watch this — specific, not grandiose. E.g. "for when you need to think" or "if you want something that stays" or "for a slow Sunday" or "when you want to feel something"' },
     },
-    required: ['title', 'genre', 'format', 'language', 'runtime', 'reason', 'mood'],
+    required: ['title', 'year', 'genre', 'format', 'language', 'runtime', 'reason', 'mood'],
   },
 };
 
@@ -176,7 +177,7 @@ const LANG_CODE = {
   Telugu: 'te', Kannada: 'kn', Bengali: 'bn',
 };
 
-async function enrichTMDB(title, language) {
+async function enrichTMDB(title, language, expectedYear = null) {
   const KEY = process.env.TMDB_API_KEY;
   if (!KEY) throw new Error('TMDB_API_KEY is required');
 
@@ -197,6 +198,15 @@ async function enrichTMDB(title, language) {
   const titleExact = (r) =>
     normTitle(r.title ?? r.name) === wanted || normTitle(r.original_title ?? r.original_name) === wanted ? 1 : 0;
 
+  // Claude supplies the release year with the pick; a candidate within ±1 year
+  // is almost certainly the intended film, anything else almost certainly isn't.
+  const resultYear = (r) => parseInt((r.release_date ?? r.first_air_date ?? '').slice(0, 4), 10) || null;
+  const yearClose = (r) => {
+    if (!expectedYear) return 0;
+    const y = resultYear(r);
+    return y && Math.abs(y - expectedYear) <= 1 ? 1 : 0;
+  };
+
   // When a non-English regional language is specified, try language-exact matches
   // first — prevents e.g. "Court" (Marathi) returning Night Court (US sitcom).
   const isRegional = langCode && langCode !== 'en';
@@ -205,10 +215,21 @@ async function enrichTMDB(title, language) {
     ? candidates.filter((r) => r.original_language !== langCode)
     : candidates;
 
-  const rank = (a, b) => titleExact(b) - titleExact(a) || qualityScore(b) - qualityScore(a);
+  const rank = (a, b) =>
+    (titleExact(b) + yearClose(b)) - (titleExact(a) + yearClose(a)) || qualityScore(b) - qualityScore(a);
   const sorted = [...langExact.sort(rank), ...rest.sort(rank)];
   const result = sorted.find((r) => r.poster_path) ?? sorted[0] ?? null;
   if (!result) return { poster: null, year: null, rating: null, streaming: [] };
+
+  // Fail closed: a wrong poster on the feed is worse than a failed run (the next
+  // cron slot retries with a fresh pick). Reject the match when it neither
+  // matches the title nor lands near the expected year.
+  if (!titleExact(result) && expectedYear && !yearClose(result)) {
+    throw new Error(
+      `TMDB match rejected for "${clean}" (${expectedYear}): best candidate was ` +
+      `"${result.title ?? result.name}" (${resultYear(result) ?? '?'}) — neither title nor year matches`
+    );
+  }
 
   let streaming = [];
   try {
@@ -223,7 +244,43 @@ async function enrichTMDB(title, language) {
     year: (result.release_date ?? result.first_air_date ?? '').slice(0, 4) || null,
     rating: result.vote_average ? result.vote_average.toFixed(1) : null,
     streaming,
+    // Identity of the matched entry, for the pre-publish verification gate.
+    matchedTitle: result.title ?? result.name ?? null,
+    matchedLanguage: result.original_language ?? null,
+    matchedOverview: result.overview ?? null,
   };
+}
+
+/**
+ * Pre-publish gate: ask Claude whether the TMDB entry we matched is the same
+ * film/show as the pick. Cheap second opinion that catches alt-title collisions
+ * (Rapid Fire → A Better Tomorrow, Wrath of Man → Seven Deadly Sins) before a
+ * wrong poster reaches the feed. Throws on mismatch — the run fails and a later
+ * cron slot retries with a fresh pick.
+ */
+async function verifyTMDBMatch(pick, tmdb) {
+  if (!tmdb.matchedTitle) return;
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 16,
+    messages: [{
+      role: 'user',
+      content:
+        `I searched a movie database for the ${pick.language} ${pick.format?.toLowerCase() ?? 'movie'} ` +
+        `"${pick.title}" (${pick.year ?? 'year unknown'}) and the best match was:\n\n` +
+        `Title: ${tmdb.matchedTitle}\nYear: ${tmdb.year ?? '?'}\nOriginal language: ${tmdb.matchedLanguage ?? '?'}\n` +
+        `Synopsis: ${(tmdb.matchedOverview ?? '').slice(0, 300)}\n\n` +
+        `Is this the same title I searched for? Reply with exactly YES or NO.`,
+    }],
+  });
+  const answer = (msg.content.find((c) => c.type === 'text')?.text ?? '').trim().toUpperCase();
+  if (!answer.startsWith('YES')) {
+    throw new Error(
+      `Match verification failed: "${pick.title}" (${pick.year ?? '?'}) matched TMDB entry ` +
+      `"${tmdb.matchedTitle}" (${tmdb.year ?? '?'}) and Claude says they are not the same title`
+    );
+  }
+  console.log(`[verify] ✓ TMDB match confirmed: "${tmdb.matchedTitle}" (${tmdb.year})`);
 }
 
 async function fetchPosterBuffer(url) {
@@ -364,8 +421,10 @@ async function main() {
       : await buildDiscoverPick(watched, postedSet);
   console.log(`[main] pick:`, JSON.stringify(pick));
 
-  const tmdb = await enrichTMDB(pick.title, pick.language);
+  const tmdb = await enrichTMDB(pick.title, pick.language, pick.year ?? null);
   console.log(`[main] tmdb:`, JSON.stringify(tmdb));
+
+  await verifyTMDBMatch(pick, tmdb);
 
   const posterBuffer = await fetchPosterBuffer(tmdb.poster);
   if (!posterBuffer) throw new Error(`No poster found for "${pick.title}" — skipping to avoid a blank card`);
