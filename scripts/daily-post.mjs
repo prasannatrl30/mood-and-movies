@@ -83,7 +83,10 @@ function saveState(state) {
   writeFileSync(join(ROOT, 'posts/state.json'), JSON.stringify(state, null, 2));
 }
 
-const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Watched-list lines may carry a " — YYYY, Language" suffix (ground truth for
+// TMDB matching). Strip it before comparing against pick/state titles.
+const baseTitle = (t) => t.replace(/\s+—\s+\d{4},\s*.+$/, '').trim();
+const norm = (t) => baseTitle(t).toLowerCase().replace(/[^a-z0-9]/g, '');
 
 // Today's date in Sydney (YYYY-MM-DD) — used both for filenames and the
 // same-day dedup guard, so multiple cron firings can never double-post.
@@ -310,7 +313,8 @@ async function buildResurfacePick(watched, postedSet) {
     `Today's energy: ${vibe}.\n\n` +
     `From my complete watch history below, pick the ONE title that best matches today's energy — ` +
     `not randomly, but because it genuinely fits this specific feeling.\n\n` +
-    `My watch history (you must pick from this list only):\n` +
+    `My watch history (you must pick from this list only). Lines may end with ` +
+    `"— year, language"; when present, return exactly those values as the pick's year and language:\n` +
     pool.map((t) => `- ${t}`).join('\n') +
     `\n\nWrite a hook that makes someone feel like they are missing out if they skip this tonight. ` +
     `Name the emotional experience — what they will feel — not what happens in the film.`
