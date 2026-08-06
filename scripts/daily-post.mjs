@@ -188,6 +188,15 @@ async function enrichTMDB(title, language) {
   const langCode = LANG_CODE[language] ?? null;
   const qualityScore = (r) => (r.vote_average ?? 0) * Math.log10((r.vote_count ?? 0) + 10);
 
+  // TMDB's search matches alternative titles too, so a famous film can outrank
+  // the one we actually asked for (e.g. "Rapid Fire" returning A Better Tomorrow,
+  // whose alt title matches, with a higher quality score). An exact title match
+  // must always beat quality — quality only breaks ties between equal matches.
+  const normTitle = (s) => (s ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const wanted = normTitle(clean);
+  const titleExact = (r) =>
+    normTitle(r.title ?? r.name) === wanted || normTitle(r.original_title ?? r.original_name) === wanted ? 1 : 0;
+
   // When a non-English regional language is specified, try language-exact matches
   // first — prevents e.g. "Court" (Marathi) returning Night Court (US sitcom).
   const isRegional = langCode && langCode !== 'en';
@@ -196,9 +205,8 @@ async function enrichTMDB(title, language) {
     ? candidates.filter((r) => r.original_language !== langCode)
     : candidates;
 
-  const sortedExact = langExact.sort((a, b) => qualityScore(b) - qualityScore(a));
-  const sortedRest  = rest.sort((a, b) => qualityScore(b) - qualityScore(a));
-  const sorted = [...sortedExact, ...sortedRest];
+  const rank = (a, b) => titleExact(b) - titleExact(a) || qualityScore(b) - qualityScore(a);
+  const sorted = [...langExact.sort(rank), ...rest.sort(rank)];
   const result = sorted.find((r) => r.poster_path) ?? sorted[0] ?? null;
   if (!result) return { poster: null, year: null, rating: null, streaming: [] };
 
