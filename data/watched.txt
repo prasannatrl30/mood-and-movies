@@ -30,14 +30,14 @@ The Specialist
 Anaconda
 Kombuseevi
 Thalaivar Thambi Thalaimaiyil
-Hot Spot 2 Much
+Hotspot 2 Much
 Baby Girl
 Usurae
 DNA
 Kangaroo Island
 Thadayam
 Taskaree: The Smuggler's Web
-Ondimuniyum Nallapadanum
+Ondimuniyum Nallapaadanum
 Subhedar
 War Machine
 Police Police (Season 1)
@@ -56,17 +56,17 @@ Dhoolpet Police Station (S01)
 Sabdham
 My Lord
 Crime 101
-Muthu Engira Kaattaan
+Muthu Alias Kaattaan
 Vadam
 Lucky the Superstar
 Muzzle: City of Wolves
 The Contract
 Mrithyunjay
 Night Hunter
-Konja Naal Poru Thalivaa
+Konja Naal Poru Thalaiva
 Thaai Kizhavi
 Eat Pray Bark
-Sampradayini Suppini Suddapoosani
+Sampradayaini Suppini Suddapusaani
 Dreamer
 S. Saraswathi
 Lockdown
@@ -147,7 +147,7 @@ The Killer's Game
 Unstoppable
 Vanangaan
 Vidaamuyarchi
-35 Chinna Vishayam Ila
+35 - Chinna Katha Kaadu
 Lara
 American Housewife (S01 & S02)
 Kadhalikka Neramillai
@@ -164,7 +164,7 @@ Driving Miss Daisy
 The Unbreakable Boy
 Thelma
 Rajakili
-Kadapuraa Kalaikuzhu
+Kaadapura Kalaikuzhu
 Rekhachithram
 The Electric State
 Appuchi Graamam
@@ -277,7 +277,7 @@ Ice Road: Vengeance
 The Thursday Murder Club
 Madharaasi
 Little Big League
-Ensign Sudum Pani
+Enai Sudum Pani
 Surrender
 Jenma Natchathiram
 The Negotiator
@@ -341,7 +341,7 @@ Diesel
 Dominic and the Ladies' Purse
 Happy Birthday Luci
 Officer on Duty
-Rajini Gang
+Rajini Gaang
 Weapons
 Superman
 The Fantastic Four: First Steps
@@ -358,7 +358,7 @@ Togo
 Fargo
 911 Lone Star (Season 2)
 Reacher 2
-Odavum Mudiyathu Oliyavum Mudiyathu
+Odavum Mudiyadhu Oliyavum Mudiyadhu
 Chicago (Season 10)
 The Last of Us
 The Beekeeper
@@ -378,7 +378,7 @@ Detachment
 Manjummel Boys
 Old Dads
 Thookudurai
-Kavaal
+Kaaval
 Anweshippin Kandethum
 Merry Christmas
 Escape Plan
@@ -525,7 +525,7 @@ Amaran
 Sattam En Kaiyil
 Goli Soda Rising (S01)
 Jama
-Bloody Bugger
+Bloody Beggar
 The Road
 Made in Italy
 Kung Fu Panda 4
@@ -565,7 +565,7 @@ PITT Season 2
 Lingam
 Landman S02
 Striking Distance
-Mammattiyaan Stars
+Mammatiyaan Stars
 Piranthanaal Vazhthukal
 Yellow
 Isakapatnam
