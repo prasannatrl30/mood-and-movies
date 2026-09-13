@@ -84,8 +84,19 @@ function saveState(state) {
 }
 
 // Watched-list lines may carry a " — YYYY, Language" suffix (ground truth for
-// TMDB matching). Strip it before comparing against pick/state titles.
-const baseTitle = (t) => t.replace(/\s+—\s+\d{4},\s*.+$/, '').trim();
+// TMDB matching) and/or a season/format tag like "(S01 | S02 | S03)",
+// "(Season 2)", "S01", "3 seasons". Strip both before comparing against
+// pick/state titles — otherwise a series with a season tag in the list never
+// matches its own plain title once posted, and can be re-recommended forever.
+// (Confirmed: this let "Ted Lasso" post twice, July 18 and July 23 2026.)
+const stripYearLangSuffix = (t) => t.replace(/\s+—\s+\d{4},\s*.+$/, '').trim();
+const stripSeasonTags = (t) => t
+  .replace(/\(\s*(S\d+[^)]*|Seasons?\s*\d+[^)]*|\d+\s*seasons?)\s*\)/gi, ' ')
+  .replace(/\bS\d{1,2}\b/gi, ' ')
+  .replace(/\bSeasons?\s*\d+\b/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const baseTitle = (t) => stripSeasonTags(stripYearLangSuffix(t));
 const norm = (t) => baseTitle(t).toLowerCase().replace(/[^a-z0-9]/g, '');
 
 // Today's date in Sydney (YYYY-MM-DD) — used both for filenames and the
